@@ -178,7 +178,7 @@ class GameScene extends Phaser.Scene {
 
     // Particle burst in rarity color
     this.particles.setPosition(chest.x, chest.y);
-    this.particles.setParticleTint(tier.color);
+    this.particles.setTint(tier.color);
     this.particles.explode(12);
 
     // Floating text
