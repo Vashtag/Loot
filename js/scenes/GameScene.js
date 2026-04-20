@@ -6,8 +6,7 @@ class GameScene extends Phaser.Scene {
     this.score = 0;
     this.timeLeft = GAME_DURATION;
     this.collectedItems = [];
-    this.hazardTimer = 0;
-    this.dangerLevel = 0; // 0-4, increases every minute
+    this.dangerLevel = 0;
   }
 
   create() {
@@ -19,26 +18,14 @@ class GameScene extends Phaser.Scene {
     this.createUI();
     this.setupInput();
     this.setupTimers();
-    // Particle emitter for loot pop
-    this.particles = this.add.particles(0, 0, 'particle', {
-      speed: { min: 80, max: 180 },
-      scale: { start: 1, end: 0 },
-      lifespan: 500,
-      quantity: 8,
-      emitting: false,
-    });
-    this.particles.setDepth(20);
   }
 
   // ── MAP GENERATION ──────────────────────────────────────────────────────────
 
   generateMap() {
     const map = Array.from({ length: ROWS }, () => Array(COLS).fill(TILE_TYPE.WALL));
-
-    // Rooms using BSP-lite: carve random rectangles
     const rooms = [];
-    const attempts = 60;
-    for (let i = 0; i < attempts; i++) {
+    for (let i = 0; i < 60; i++) {
       const rw = Phaser.Math.Between(4, 9);
       const rh = Phaser.Math.Between(3, 7);
       const rx = Phaser.Math.Between(1, COLS - rw - 1);
@@ -48,18 +35,12 @@ class GameScene extends Phaser.Scene {
         this.carveRoom(map, rx, ry, rw, rh);
       }
     }
-
-    // Connect rooms with corridors
     for (let i = 1; i < rooms.length; i++) {
-      const a = rooms[i - 1];
-      const b = rooms[i];
-      const ax = Math.floor(a.x + a.w / 2);
-      const ay = Math.floor(a.y + a.h / 2);
-      const bx = Math.floor(b.x + b.w / 2);
-      const by = Math.floor(b.y + b.h / 2);
-      this.carveCorridor(map, ax, ay, bx, by);
+      const a = rooms[i - 1], b = rooms[i];
+      this.carveCorridor(map,
+        Math.floor(a.x + a.w / 2), Math.floor(a.y + a.h / 2),
+        Math.floor(b.x + b.w / 2), Math.floor(b.y + b.h / 2));
     }
-
     this.rooms = rooms;
     return map;
   }
@@ -80,20 +61,12 @@ class GameScene extends Phaser.Scene {
 
   carveCorridor(map, x1, y1, x2, y2) {
     let x = x1, y = y1;
-    while (x !== x2) {
-      map[y][x] = TILE_TYPE.FLOOR;
-      x += x < x2 ? 1 : -1;
-    }
-    while (y !== y2) {
-      map[y][x] = TILE_TYPE.FLOOR;
-      y += y < y2 ? 1 : -1;
-    }
+    while (x !== x2) { map[y][x] = TILE_TYPE.FLOOR; x += x < x2 ? 1 : -1; }
+    while (y !== y2) { map[y][x] = TILE_TYPE.FLOOR; y += y < y2 ? 1 : -1; }
   }
 
   renderMap() {
     this.wallGroup = this.physics.add.staticGroup();
-    this.floorTiles = [];
-
     for (let row = 0; row < ROWS; row++) {
       for (let col = 0; col < COLS; col++) {
         const x = col * TILE + TILE / 2;
@@ -115,40 +88,39 @@ class GameScene extends Phaser.Scene {
     const startRoom = this.rooms[0];
     const sx = (startRoom.x + Math.floor(startRoom.w / 2)) * TILE + TILE / 2;
     const sy = (startRoom.y + Math.floor(startRoom.h / 2)) * TILE + TILE / 2;
-
-    this.player = this.physics.add.sprite(sx, sy, 'player');
+    this.player = this.physics.add.sprite(sx, sy, 'player_sheet', 0);
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(10);
     this.player.setSize(20, 20);
     this.physics.add.collider(this.player, this.wallGroup);
+    this._facing = 'down';
+    this.player.play('idle_down');
   }
 
   // ── CHESTS ──────────────────────────────────────────────────────────────────
 
   createChests() {
-    this.chests = this.physics.add.staticGroup();
-    this.chestData = new Map();
+    // Plain static group — no overlap callback, we use proximity in update()
+    this.chestGroup = this.physics.add.staticGroup();
+    this.chestList = []; // [{sprite, item, opened}]
 
-    // Place 1-3 chests per room (skip start room)
     for (let i = 1; i < this.rooms.length; i++) {
       const room = this.rooms[i];
       const count = Phaser.Math.Between(1, 3);
       for (let c = 0; c < count; c++) {
-        const cx = Phaser.Math.Between(room.x + 1, room.x + room.w - 2);
-        const cy = Phaser.Math.Between(room.y + 1, room.y + room.h - 2);
-        if (this.map[cy][cx] !== TILE_TYPE.FLOOR) continue;
-        const px = cx * TILE + TILE / 2;
-        const py = cy * TILE + TILE / 2;
-        const chest = this.chests.create(px, py, 'chest');
-        chest.setDepth(5);
-        chest.refreshBody();
-        chest.setInteractive();
-        const item = this.rollLoot();
-        this.chestData.set(chest, { item, opened: false });
+        const col = Phaser.Math.Between(room.x + 1, room.x + room.w - 2);
+        const row = Phaser.Math.Between(room.y + 1, room.y + room.h - 2);
+        if (this.map[row][col] !== TILE_TYPE.FLOOR) continue;
+        const px = col * TILE + TILE / 2;
+        const py = row * TILE + TILE / 2;
+        const sprite = this.chestGroup.create(px, py, 'chest');
+        sprite.setDepth(5);
+        sprite.refreshBody();
+        this.chestList.push({ sprite, item: this.rollLoot(), opened: false });
       }
     }
-
-    this.physics.add.overlap(this.player, this.chests, this.tryOpenChest, null, this);
+    // Chests are solid — player walks up to them, can't walk through
+    this.physics.add.collider(this.player, this.chestGroup);
   }
 
   rollLoot() {
@@ -164,26 +136,37 @@ class GameScene extends Phaser.Scene {
     return LOOT_ITEMS[0];
   }
 
-  tryOpenChest(player, chest) {
-    const data = this.chestData.get(chest);
-    if (!data || data.opened) return;
-    data.opened = true;
-    chest.setTexture('chest_open');
-    chest.refreshBody();
+  tryOpenChest(entry) {
+    if (entry.opened) return;
+    entry.opened = true;
+    entry.sprite.setTexture('chest_open');
+    entry.sprite.refreshBody();
 
-    const item = data.item;
-    const tier = RARITY[item.rarity];
+    const tier = RARITY[entry.item.rarity];
     this.score += tier.score;
-    this.collectedItems.push(item);
+    this.collectedItems.push(entry.item);
 
-    // Particle burst in rarity color
-    this.particles.setPosition(chest.x, chest.y);
-    this.particles.setTint(tier.color);
-    this.particles.explode(12);
-
-    // Floating text
-    this.showFloatingText(chest.x, chest.y - 20, `+${tier.score} ${item.name}`, tier.color);
+    this.showLootSparkle(entry.sprite.x, entry.sprite.y, tier.color);
+    this.showFloatingText(entry.sprite.x, entry.sprite.y - 20,
+      `+${tier.score} ${entry.item.name}`, tier.color);
     this.updateScoreUI();
+  }
+
+  // Tween-based sparkle — no Phaser particle API needed
+  showLootSparkle(x, y, color) {
+    for (let i = 0; i < 8; i++) {
+      const angle = (Math.PI * 2 / 8) * i;
+      const dist = 24 + Math.random() * 20;
+      const dot = this.add.rectangle(x, y, 6, 6, color).setDepth(20);
+      this.tweens.add({
+        targets: dot,
+        x: x + Math.cos(angle) * dist,
+        y: y + Math.sin(angle) * dist,
+        alpha: 0, scaleX: 0, scaleY: 0,
+        duration: 500 + Math.random() * 200,
+        onComplete: () => dot.destroy(),
+      });
+    }
   }
 
   showFloatingText(x, y, msg, color) {
@@ -194,7 +177,7 @@ class GameScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(30);
     this.tweens.add({
       targets: txt, y: y - 40, alpha: 0, duration: 1200,
-      onComplete: () => txt.destroy()
+      onComplete: () => txt.destroy(),
     });
   }
 
@@ -202,30 +185,23 @@ class GameScene extends Phaser.Scene {
 
   createHazards() {
     this.hazardGroup = this.physics.add.staticGroup();
-    this.hazardSprites = [];
-    // Initial sparse hazards (danger level 0)
     this.spawnHazardBatch(3);
     this.physics.add.overlap(this.player, this.hazardGroup, this.hitHazard, null, this);
   }
 
   spawnHazardBatch(count) {
     for (let i = 0; i < count; i++) {
-      // Pick a random floor tile not in start room
       let attempts = 0;
       while (attempts++ < 100) {
         const col = Phaser.Math.Between(1, COLS - 2);
         const row = Phaser.Math.Between(1, ROWS - 2);
         if (this.map[row][col] !== TILE_TYPE.FLOOR) continue;
-        // Not too close to player
         const px = this.player.x / TILE;
         const py = this.player.y / TILE;
         if (Math.abs(col - px) < 5 && Math.abs(row - py) < 5) continue;
-        const hx = col * TILE + TILE / 2;
-        const hy = row * TILE + TILE / 2;
-        const h = this.hazardGroup.create(hx, hy, 'hazard');
+        const h = this.hazardGroup.create(col * TILE + TILE / 2, row * TILE + TILE / 2, 'hazard');
         h.setDepth(3);
         h.refreshBody();
-        this.hazardSprites.push(h);
         break;
       }
     }
@@ -238,9 +214,7 @@ class GameScene extends Phaser.Scene {
     this.score = Math.max(0, this.score - penalty);
     this.showFloatingText(player.x, player.y - 20, `-${penalty} OUCH!`, 0xff3333);
     this.updateScoreUI();
-    // Flash red
-    this.cameras.main.flash(300, 255, 0, 0, false);
-    // Knockback
+    this.cameras.main.flash(300, 255, 0, 0);
     const angle = Phaser.Math.Angle.Between(hazard.x, hazard.y, player.x, player.y);
     this.player.setVelocity(Math.cos(angle) * 200, Math.sin(angle) * 200);
     this.time.delayedCall(800, () => { this._hitCooldown = false; });
@@ -256,8 +230,6 @@ class GameScene extends Phaser.Scene {
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
     });
-
-    // Mobile virtual joystick (simple touch)
     this._touch = { active: false, sx: 0, sy: 0, dx: 0, dy: 0 };
     this.input.on('pointerdown', (p) => {
       this._touch.active = true;
@@ -277,31 +249,25 @@ class GameScene extends Phaser.Scene {
   // ── TIMERS ───────────────────────────────────────────────────────────────────
 
   setupTimers() {
-    // Main countdown
     this.gameTimer = this.time.addEvent({
       delay: 1000, loop: true,
       callback: () => {
         this.timeLeft--;
         this.updateTimerUI();
-
-        // Escalate danger every 60s
         const newDanger = Math.floor((GAME_DURATION - this.timeLeft) / 60);
         if (newDanger > this.dangerLevel) {
           this.dangerLevel = newDanger;
           this.escalateDanger();
         }
-
         if (this.timeLeft <= 0) this.endGame();
       }
     });
   }
 
   escalateDanger() {
-    const extra = 2 + this.dangerLevel * 2;
-    this.spawnHazardBatch(extra);
+    this.spawnHazardBatch(2 + this.dangerLevel * 2);
     this.showFloatingText(GAME_W / 2, GAME_H / 2 - 60,
       `⚠ Danger Level ${this.dangerLevel}!`, 0xff6600);
-    // Shake camera slightly
     this.cameras.main.shake(400, 0.006);
   }
 
@@ -310,30 +276,28 @@ class GameScene extends Phaser.Scene {
   createUI() {
     const pad = 8;
     const barH = 48;
-
-    // Top bar background
     this.add.rectangle(GAME_W / 2, barH / 2, GAME_W, barH, 0x0d0d1e, 0.88).setDepth(50);
     this.add.rectangle(GAME_W / 2, barH, GAME_W, 2, 0x7ec850, 1).setDepth(50);
-
-    // Player name
     this.add.text(pad + 4, pad, this.playerName.toUpperCase(), {
       fontSize: '14px', fill: '#7ec850', fontFamily: 'Courier New'
     }).setDepth(51);
-
-    // Score label
     this.scoreLbl = this.add.text(GAME_W / 2, pad, 'SCORE: 0', {
       fontSize: '16px', fill: '#ffaa00', fontFamily: 'Courier New'
     }).setOrigin(0.5, 0).setDepth(51);
-
-    // Timer
     this.timerLbl = this.add.text(GAME_W - pad - 4, pad, '5:00', {
       fontSize: '16px', fill: '#ffffff', fontFamily: 'Courier New'
     }).setOrigin(1, 0).setDepth(51);
 
-    // Danger label
-    this.dangerLbl = this.add.text(GAME_W / 2, barH + 6, '', {
-      fontSize: '11px', fill: '#ff6600', fontFamily: 'Courier New'
-    }).setOrigin(0.5, 0).setDepth(51);
+    // Loot hint at bottom
+    this.add.text(GAME_W / 2, GAME_H - 10, 'Walk up to chests to loot them!', {
+      fontSize: '11px', fill: '#556644', fontFamily: 'Courier New'
+    }).setOrigin(0.5, 1).setDepth(51);
+
+    // Proximity hint (shows when near a chest)
+    this.hintLbl = this.add.text(GAME_W / 2, GAME_H - 28, '', {
+      fontSize: '13px', fill: '#ffaa00', stroke: '#000000', strokeThickness: 3,
+      fontFamily: 'Courier New'
+    }).setOrigin(0.5, 1).setDepth(52);
   }
 
   updateScoreUI() {
@@ -344,7 +308,6 @@ class GameScene extends Phaser.Scene {
     const m = Math.floor(this.timeLeft / 60);
     const s = String(this.timeLeft % 60).padStart(2, '0');
     this.timerLbl.setText(`${m}:${s}`);
-
     if (this.timeLeft <= 60) this.timerLbl.setColor('#ff4444');
     else if (this.timeLeft <= 120) this.timerLbl.setColor('#ffaa00');
   }
@@ -373,16 +336,50 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // Normalize diagonal
-    if (vx !== 0 && vy !== 0) {
-      vx *= 0.707; vy *= 0.707;
-    }
-
+    if (vx !== 0 && vy !== 0) { vx *= 0.707; vy *= 0.707; }
     this.player.setVelocity(vx, vy);
 
-    // Flip sprite based on direction
-    if (vx < 0) this.player.setFlipX(true);
-    else if (vx > 0) this.player.setFlipX(false);
+    // ── Animation state machine ───────────────────────────────────────────────
+    const moving = vx !== 0 || vy !== 0;
+    if (moving) {
+      if (vx < 0) {
+        this._facing = 'left';
+        this.player.setFlipX(true);
+        if (this.player.anims.currentAnim?.key !== 'walk_right') this.player.play('walk_right');
+      } else if (vx > 0) {
+        this._facing = 'right';
+        this.player.setFlipX(false);
+        if (this.player.anims.currentAnim?.key !== 'walk_right') this.player.play('walk_right');
+      } else if (vy < 0) {
+        this._facing = 'up';
+        this.player.setFlipX(false);
+        if (this.player.anims.currentAnim?.key !== 'walk_up') this.player.play('walk_up');
+      } else {
+        this._facing = 'down';
+        this.player.setFlipX(false);
+        if (this.player.anims.currentAnim?.key !== 'walk_down') this.player.play('walk_down');
+      }
+    } else {
+      const idleKey = `idle_${this._facing === 'left' ? 'right' : this._facing}`;
+      if (this.player.anims.currentAnim?.key !== idleKey) {
+        this.player.play(idleKey);
+        this.player.setFlipX(this._facing === 'left');
+      }
+    }
+
+    // ── Proximity-based chest looting ─────────────────────────────────────────
+    const lootDist = TILE * 1.4;
+    let nearChest = false;
+    for (const entry of this.chestList) {
+      if (entry.opened) continue;
+      const dist = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y, entry.sprite.x, entry.sprite.y);
+      if (dist < lootDist) {
+        nearChest = true;
+        this.tryOpenChest(entry);
+      }
+    }
+    this.hintLbl.setText(nearChest ? '✦ Looting...' : '');
   }
 
   // ── END GAME ─────────────────────────────────────────────────────────────────
