@@ -88,11 +88,13 @@ class GameScene extends Phaser.Scene {
     const startRoom = this.rooms[0];
     const sx = (startRoom.x + Math.floor(startRoom.w / 2)) * TILE + TILE / 2;
     const sy = (startRoom.y + Math.floor(startRoom.h / 2)) * TILE + TILE / 2;
-    this.player = this.physics.add.sprite(sx, sy, 'player');
+    this.player = this.physics.add.sprite(sx, sy, 'player_sheet', 0);
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(10);
     this.player.setSize(20, 20);
     this.physics.add.collider(this.player, this.wallGroup);
+    this._facing = 'down';
+    this.player.play('idle_down');
   }
 
   // ── CHESTS ──────────────────────────────────────────────────────────────────
@@ -336,10 +338,36 @@ class GameScene extends Phaser.Scene {
 
     if (vx !== 0 && vy !== 0) { vx *= 0.707; vy *= 0.707; }
     this.player.setVelocity(vx, vy);
-    if (vx < 0) this.player.setFlipX(true);
-    else if (vx > 0) this.player.setFlipX(false);
 
-    // Proximity-based chest looting
+    // ── Animation state machine ───────────────────────────────────────────────
+    const moving = vx !== 0 || vy !== 0;
+    if (moving) {
+      if (vx < 0) {
+        this._facing = 'left';
+        this.player.setFlipX(true);
+        if (this.player.anims.currentAnim?.key !== 'walk_right') this.player.play('walk_right');
+      } else if (vx > 0) {
+        this._facing = 'right';
+        this.player.setFlipX(false);
+        if (this.player.anims.currentAnim?.key !== 'walk_right') this.player.play('walk_right');
+      } else if (vy < 0) {
+        this._facing = 'up';
+        this.player.setFlipX(false);
+        if (this.player.anims.currentAnim?.key !== 'walk_up') this.player.play('walk_up');
+      } else {
+        this._facing = 'down';
+        this.player.setFlipX(false);
+        if (this.player.anims.currentAnim?.key !== 'walk_down') this.player.play('walk_down');
+      }
+    } else {
+      const idleKey = `idle_${this._facing === 'left' ? 'right' : this._facing}`;
+      if (this.player.anims.currentAnim?.key !== idleKey) {
+        this.player.play(idleKey);
+        this.player.setFlipX(this._facing === 'left');
+      }
+    }
+
+    // ── Proximity-based chest looting ─────────────────────────────────────────
     const lootDist = TILE * 1.4;
     let nearChest = false;
     for (const entry of this.chestList) {
