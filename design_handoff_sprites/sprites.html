@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loot & Scatter — Sprites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:       #0e1217;
+  --surface:  #161c24;
+  --surface2: #1e2733;
+  --border:   #2a3340;
+  --green:    #7ec850;
+  --green2:   #a0e060;
+  --gold:     #d4a017;
+  --text:     #e2ead6;
+  --muted:    #7a8e72;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  padding: 40px 24px 80px;
+}
+
+.page { max-width: 960px; margin: 0 auto; }
+
+header {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 44px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 24px;
+}
+
+h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  color: var(--green);
+  line-height: 1.6;
+  text-shadow: 0 0 24px rgba(126,200,80,0.3);
+}
+
+.header-meta {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--green);
+  letter-spacing: 0.1em;
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+
+canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+
+/* Sheet display */
+.sheet-scales {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.scale-group { display: flex; flex-direction: column; gap: 8px; }
+.scale-label {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'Press Start 2P', monospace;
+}
+
+.canvas-bg {
+  background: #222831;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+  display: inline-block;
+}
+
+/* Walk previews */
+.walk-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.walk-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.walk-card canvas { background: #7ec850; border-radius: 2px; }
+.walk-card .lbl {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: var(--muted);
+}
+
+/* Tiles */
+.tile-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.tile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.tile-card .lbl {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Loot */
+.loot-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.loot-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.rarity-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  text-align: center;
+}
+
+/* Game preview */
+.game-wrap {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.game-canvas-wrap {
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  display: inline-block;
+  box-shadow: 0 0 40px rgba(126,200,80,0.08);
+}
+
+.game-info {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.info-row canvas { flex-shrink: 0; }
+
+/* Buttons */
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+.btn {
+  background: var(--green);
+  color: #0a1a04;
+  border: none;
+  padding: 9px 16px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  cursor: pointer;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  transition: background 0.15s;
+}
+.btn:hover { background: var(--green2); }
+.btn.secondary {
+  background: var(--surface2);
+  color: var(--green);
+  border: 1px solid var(--border);
+}
+.btn.secondary:hover { background: var(--border); }
+
+/* Tweaks panel */
+#tweaksPanel {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  width: 240px;
+  z-index: 100;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+#tweaksPanel h3 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--green);
+  margin-bottom: 16px;
+}
+
+.tweak-row {
+  margin-bottom: 14px;
+}
+
+.tweak-row label {
+  font-size: 10px;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 6px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+}
+
+.tweak-row input[type=range] {
+  width: 100%;
+  accent-color: var(--green);
+}
+
+.tweak-row input[type=color] {
+  width: 36px; height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  background: none;
+}
+
+.color-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.color-swatch {
+  width: 24px; height: 24px;
+  border-radius: 3px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+.color-swatch.active { border-color: white; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div>
+      <h1>LOOT & SCATTER</h1>
+      <p class="header-meta">Pixel Sprite Sheet · 16×16px · Stardew Valley Style · Forest Overworld</p>
+    </div>
+  </header>
+
+  <!-- SPRITE SHEET -->
+  <section>
+    <h2>SPRITE SHEET EXPORT</h2>
+    <div class="sheet-scales">
+      <div class="scale-group">
+        <div class="scale-label">1× (native)</div>
+        <div class="canvas-bg"><canvas id="sheet1x"></canvas></div>
+      </div>
+      <div class="scale-group">
+        <div class="scale-label">4×</div>
+        <div class="canvas-bg"><canvas id="sheet4x"></canvas></div>
+      </div>
+      <div class="scale-group">
+        <div class="scale-label">8×</div>
+        <div class="canvas-bg"><canvas id="sheet8x"></canvas></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="dlPlayer">⬇ PLAYER SHEET</button>
+      <button class="btn secondary" id="dlTiles">⬇ TILES</button>
+      <button class="btn secondary" id="dlLoot">⬇ LOOT ITEMS</button>
+    </div>
+  </section>
+
+  <!-- WALK PREVIEW -->
+  <section>
+    <h2>WALK CYCLE PREVIEW</h2>
+    <div class="walk-grid">
+      <div class="walk-card">
+        <canvas id="walkDown" width="96" height="96"></canvas>
+        <span class="lbl">WALK DOWN</span>
+      </div>
+      <div class="walk-card">
+        <canvas id="walkUp" width="96" height="96"></canvas>
+        <span class="lbl">WALK UP</span>
+      </div>
+      <div class="walk-card">
+        <canvas id="walkRight" width="96" height="96"></canvas>
+        <span class="lbl">WALK RIGHT</span>
+      </div>
+      <div class="walk-card">
+        <canvas id="walkLeft" width="96" height="96"></canvas>
+        <span class="lbl">WALK LEFT</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ENVIRONMENT TILES -->
+  <section>
+    <h2>ENVIRONMENT TILES</h2>
+    <div class="tile-row" id="tilesRow"></div>
+  </section>
+
+  <!-- LOOT ITEMS -->
+  <section>
+    <h2>LOOT ITEMS BY RARITY</h2>
+    <div class="loot-row" id="lootRow"></div>
+  </section>
+
+  <!-- GAME PREVIEW -->
+  <section>
+    <h2>GAME WORLD PREVIEW</h2>
+    <div class="game-wrap">
+      <div class="game-canvas-wrap">
+        <canvas id="gamePreview"></canvas>
+      </div>
+      <div class="game-info">
+        <p style="font-size:12px;color:var(--muted);line-height:1.7">
+          All sprites are 16×16px, designed for Phaser 3.<br>
+          Load with <code style="color:var(--green);font-size:11px">frameWidth: 16, frameHeight: 16</code>.
+        </p>
+        <div style="margin-top:8px;">
+          <div class="info-row">
+            <canvas id="iconFloor" width="32" height="32"></canvas>
+            <span>grass floor · tile key <code style="color:var(--green)">'floor'</code></span>
+          </div>
+          <div class="info-row" style="margin-top:8px">
+            <canvas id="iconWall" width="32" height="32"></canvas>
+            <span>stone wall · tile key <code style="color:var(--green)">'wall'</code></span>
+          </div>
+          <div class="info-row" style="margin-top:8px">
+            <canvas id="iconChest" width="32" height="32"></canvas>
+            <span>chest · keys <code style="color:var(--green)">'chest'</code> / <code style="color:var(--green)">'chest_open'</code></span>
+          </div>
+          <div class="info-row" style="margin-top:8px">
+            <canvas id="iconHazard" width="32" height="32"></canvas>
+            <span>thorns hazard · tile key <code style="color:var(--green)">'hazard'</code></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- TWEAKS PANEL -->
+<div id="tweaksPanel">
+  <h3>Tweaks</h3>
+
+  <div class="tweak-row">
+    <label>HAIR COLOR</label>
+    <div class="color-row" id="hairColors">
+      <div class="color-swatch active" data-h="brown" style="background:#924518"></div>
+      <div class="color-swatch" data-h="dark" style="background:#2a1808"></div>
+      <div class="color-swatch" data-h="blonde" style="background:#d4a030"></div>
+      <div class="color-swatch" data-h="red" style="background:#c03010"></div>
+      <div class="color-swatch" data-h="grey" style="background:#888"></div>
+    </div>
+  </div>
+
+  <div class="tweak-row">
+    <label>SHIRT COLOR</label>
+    <div class="color-row" id="shirtColors">
+      <div class="color-swatch active" data-s="blue" style="background:#5090d8"></div>
+      <div class="color-swatch" data-s="red" style="background:#d04040"></div>
+      <div class="color-swatch" data-s="green" style="background:#3a9040"></div>
+      <div class="color-swatch" data-s="purple" style="background:#8040c0"></div>
+      <div class="color-swatch" data-s="teal" style="background:#30a0a0"></div>
+    </div>
+  </div>
+
+  <div class="tweak-row">
+    <label>ANIM SPEED</label>
+    <input type="range" id="speedSlider" min="80" max="400" step="20" value="160">
+  </div>
+
+  <div class="tweak-row">
+    <label>PREVIEW SCALE</label>
+    <input type="range" id="scaleSlider" min="3" max="8" step="1" value="6">
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  TWEAKS STATE
+// ══════════════════════════════════════════════════════════════════
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "hairColor": "#924518",
+  "hairDark":  "#6b3210",
+  "hairLight": "#c07030",
+  "shirtColor": "#5090d8",
+  "shirtDark":  "#2a6ab5",
+  "shirtLight": "#82b8f0",
+  "animSpeed": 160,
+  "previewScale": 6
+}/*EDITMODE-END*/;
+
+let T = { ...TWEAK_DEFAULTS };
+
+// Hair palettes
+const HAIR_PALS = {
+  brown:  { mid: '#924518', dark: '#6b3210', light: '#c07030' },
+  dark:   { mid: '#2a1808', dark: '#180800', light: '#3a2010' },
+  blonde: { mid: '#d4a030', dark: '#a07820', light: '#f0c860' },
+  red:    { mid: '#c03010', dark: '#882010', light: '#e05030' },
+  grey:   { mid: '#888888', dark: '#555555', light: '#aaaaaa' },
+};
+
+const SHIRT_PALS = {
+  blue:   { mid: '#5090d8', dark: '#2a6ab5', light: '#82b8f0' },
+  red:    { mid: '#d04040', dark: '#a02828', light: '#f07070' },
+  green:  { mid: '#3a9040', dark: '#286828', light: '#60b860' },
+  purple: { mid: '#8040c0', dark: '#602898', light: '#a870e0' },
+  teal:   { mid: '#30a0a0', dark: '#207878', light: '#60c8c8' },
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  DRAWING UTILITIES
+// ══════════════════════════════════════════════════════════════════
+function pxr(ctx, x, y, w, h, c, s) {
+  if (!c) return;
+  ctx.fillStyle = c;
+  ctx.fillRect(x * s, y * s, w * s, h * s);
+}
+function px(ctx, x, y, c, s) { pxr(ctx, x, y, 1, 1, c, s); }
+
+function clearCanvas(ctx, w, h) {
+  ctx.clearRect(0, 0, w, h);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  SPRITE DRAWERS
+// ══════════════════════════════════════════════════════════════════
+
+function drawFloor(ctx, ox, oy, s) {
+  pxr(ctx, ox, oy, 16, 16, '#7ec850', s);
+  // dark shadow edge
+  pxr(ctx, ox+15, oy, 1, 16, '#5ea030', s);
+  pxr(ctx, ox, oy+15, 15, 1, '#5ea030', s);
+  // subtle dark dots (undergrowth / texture)
+  const dark = '#4a8a1a';
+  [[2,2],[11,3],[5,6],[14,8],[1,10],[8,12],[13,5],[6,14],[3,9]].forEach(([x,y])=>px(ctx,ox+x,oy+y,dark,s));
+  // light highlight dots
+  const lite = '#a0e060';
+  [[7,1],[0,6],[12,11],[4,15],[9,4]].forEach(([x,y])=>px(ctx,ox+x,oy+y,lite,s));
+  // tiny grass blades
+  pxr(ctx, ox+4, oy+3, 1, 2, '#3a7010', s);
+  pxr(ctx, ox+12, oy+9, 1, 2, '#3a7010', s);
+  pxr(ctx, ox+7, oy+13, 1, 2, '#3a7010', s);
+}
+
+function drawWall(ctx, ox, oy, s) {
+  pxr(ctx, ox, oy, 16, 16, '#8a7040', s);
+  // brick rows (alternating offset)
+  const brick = (bx, by, bw, bh) => {
+    pxr(ctx, ox+bx, oy+by, bw, bh, '#b09060', s);
+    pxr(ctx, ox+bx, oy+by, bw, 1, '#c8b090', s);   // top highlight
+    pxr(ctx, ox+bx, oy+by, 1, bh, '#c8b090', s);   // left highlight
+    pxr(ctx, ox+bx+bw-1, oy+by+bh-1, 1, 1, '#6a5025', s); // corner shadow
+  };
+  // row 1 (y=1): 2 bricks
+  brick(1, 1, 6, 3);
+  brick(9, 1, 6, 3);
+  // mortar row at y=4
+  pxr(ctx, ox, oy+4, 16, 1, '#504020', s);
+  // row 2 (y=5, offset): 3 bricks
+  brick(0, 5, 4, 3);
+  brick(5, 5, 5, 3);
+  brick(11, 5, 5, 3);
+  pxr(ctx, ox+4, oy+5, 1, 3, '#504020', s);
+  pxr(ctx, ox+10, oy+5, 1, 3, '#504020', s);
+  pxr(ctx, ox, oy+8, 16, 1, '#504020', s);
+  // row 3 (y=9):
+  brick(1, 9, 6, 3);
+  brick(9, 9, 6, 3);
+  pxr(ctx, ox, oy+12, 16, 1, '#504020', s);
+  // row 4 (y=13, offset):
+  brick(0, 13, 4, 3);
+  brick(5, 13, 5, 3);
+  brick(11, 13, 4, 3);
+  pxr(ctx, ox+4, oy+13, 1, 3, '#504020', s);
+  pxr(ctx, ox+10, oy+13, 1, 3, '#504020', s);
+}
+
+function drawChest(ctx, ox, oy, s) {
+  // body
+  pxr(ctx, ox+3, oy+9,  10, 7, '#c87830', s);
+  // lid (slightly lighter)
+  pxr(ctx, ox+3, oy+4,  10, 6, '#e09840', s);
+  pxr(ctx, ox+3, oy+4,  10, 1, '#f0b860', s);  // lid top highlight
+  pxr(ctx, ox+3, oy+4,  1,  6, '#f0b860', s);  // lid left highlight
+  // gold band
+  pxr(ctx, ox+3, oy+10, 10, 2, '#d4a810', s);
+  pxr(ctx, ox+3, oy+10, 10, 1, '#f0c830', s);  // band top
+  // lock
+  pxr(ctx, ox+7, oy+8,  4,  4, '#ffe050', s);
+  pxr(ctx, ox+8, oy+10, 2,  2, '#c8b820', s);  // keyhole dark
+  // outline shadow
+  pxr(ctx, ox+3, oy+15, 10, 1, '#6a4010', s);
+  pxr(ctx, ox+2, oy+4,  1, 12, '#6a4010', s);
+  pxr(ctx, ox+13,oy+4,  1, 12, '#6a4010', s);
+}
+
+function drawChestOpen(ctx, ox, oy, s) {
+  // body
+  pxr(ctx, ox+3, oy+10, 10, 6, '#c87830', s);
+  // lid tilted back
+  pxr(ctx, ox+3, oy+3,  10, 5, '#e09840', s);
+  pxr(ctx, ox+3, oy+3,  10, 1, '#f0b860', s);
+  // dark interior
+  pxr(ctx, ox+4, oy+10, 8,  5, '#1a0800', s);
+  // glinting items inside
+  pxr(ctx, ox+5, oy+11, 2,  1, '#d4a810', s);
+  pxr(ctx, ox+9, oy+13, 2,  1, '#d4a810', s);
+  pxr(ctx, ox+7, oy+12, 1,  1, '#ffe050', s);
+  // band
+  pxr(ctx, ox+3, oy+9,  10, 2, '#d4a810', s);
+  // outline
+  pxr(ctx, ox+3, oy+15, 10, 1, '#6a4010', s);
+  pxr(ctx, ox+2, oy+3,  1, 13, '#6a4010', s);
+  pxr(ctx, ox+13,oy+3,  1, 13, '#6a4010', s);
+}
+
+function drawHazard(ctx, ox, oy, s) {
+  // ground base
+  pxr(ctx, ox, oy+11, 16, 5, '#2a4010', s);
+  // main vine stems
+  pxr(ctx, ox+7, oy+2,  2, 14, '#2a5010', s);   // vertical
+  pxr(ctx, ox+2, oy+7,  12, 2, '#2a5010', s);   // horizontal
+  // branch vines
+  pxr(ctx, ox+4, oy+5,  2, 2,  '#3a6818', s);
+  pxr(ctx, ox+10,oy+5,  2, 2,  '#3a6818', s);
+  pxr(ctx, ox+4, oy+9,  2, 2,  '#3a6818', s);
+  pxr(ctx, ox+10,oy+9,  2, 2,  '#3a6818', s);
+  // thorns (sharp triangles approximated)
+  const thorn = '#88aa20';
+  const tip   = '#ff4422';
+  // left thorns
+  pxr(ctx, ox+1, oy+6,  3, 2,  thorn, s);  px(ctx, ox+1, oy+5, tip, s);
+  pxr(ctx, ox+0, oy+9,  3, 2,  thorn, s);  px(ctx, ox+0, oy+8, tip, s);
+  // right thorns
+  pxr(ctx, ox+12,oy+6,  3, 2,  thorn, s);  px(ctx, ox+14,oy+5, tip, s);
+  pxr(ctx, ox+13,oy+9,  3, 2,  thorn, s);  px(ctx, ox+15,oy+8, tip, s);
+  // top thorns
+  pxr(ctx, ox+5, oy+0,  2, 3,  thorn, s);  px(ctx, ox+5, oy+0, tip, s);
+  pxr(ctx, ox+9, oy+0,  2, 3,  thorn, s);  px(ctx, ox+10,oy+0, tip, s);
+  pxr(ctx, ox+3, oy+3,  2, 2,  thorn, s);  px(ctx, ox+3, oy+2, tip, s);
+  pxr(ctx, ox+11,oy+3,  2, 2,  thorn, s);  px(ctx, ox+12,oy+2, tip, s);
+  // leaves for naturalistic look
+  pxr(ctx, ox+5, oy+5,  2, 1, '#4a8a20', s);
+  pxr(ctx, ox+9, oy+9,  2, 1, '#4a8a20', s);
+}
+
+// Loot items by rarity
+function drawLoot(ctx, ox, oy, s, rarity) {
+  const bg = {
+    common:    '#3a3a3a',
+    uncommon:  '#1a3a1a',
+    rare:      '#1a1a3a',
+    epic:      '#2a1a3a',
+    legendary: '#3a2a0a',
+  }[rarity];
+
+  // bg glow pill
+  pxr(ctx, ox+2, oy+2, 12, 12, bg, s);
+
+  if (rarity === 'common') {
+    // Coin
+    pxr(ctx, ox+5, oy+4,  6, 8,  '#c8a010', s);
+    pxr(ctx, ox+4, oy+5,  8, 6,  '#c8a010', s);
+    pxr(ctx, ox+6, oy+5,  4, 6,  '#f0c830', s);  // face shine
+    pxr(ctx, ox+5, oy+4,  6, 1,  '#f0c830', s);  // top shine
+    pxr(ctx, ox+7, oy+7,  2, 2,  '#ffffff', s);  // highlight dot
+    pxr(ctx, ox+9, oy+11, 4, 2,  '#806808', s);  // shadow
+  }
+  else if (rarity === 'uncommon') {
+    // Ring
+    pxr(ctx, ox+5, oy+6,  6, 5,  '#c8c8c8', s);
+    pxr(ctx, ox+6, oy+7,  4, 3,  '#888888', s);  // hole
+    pxr(ctx, ox+7, oy+8,  2, 1,  bg,       s);   // hole center
+    pxr(ctx, ox+6, oy+5,  4, 1,  '#ffffff', s);  // top shine
+    pxr(ctx, ox+6, oy+4,  4, 2,  '#44dd44', s);  // gem
+    pxr(ctx, ox+7, oy+4,  2, 1,  '#aaffaa', s);  // gem shine
+  }
+  else if (rarity === 'rare') {
+    // Crystal orb
+    pxr(ctx, ox+4, oy+4,  8, 8,  '#3060d0', s);
+    pxr(ctx, ox+5, oy+5,  6, 6,  '#4488ff', s);
+    pxr(ctx, ox+6, oy+6,  4, 4,  '#80b0ff', s);
+    pxr(ctx, ox+7, oy+6,  2, 2,  '#c0d8ff', s);  // inner glow
+    pxr(ctx, ox+6, oy+5,  2, 1,  '#ffffff', s);  // top shine
+    // orbiting sparkle
+    px(ctx, ox+3,  oy+4,  '#aaccff', s);
+    px(ctx, ox+12, oy+10, '#aaccff', s);
+  }
+  else if (rarity === 'epic') {
+    // Void shard / gem
+    // Diamond shape
+    pxr(ctx, ox+7, oy+3,  2, 1,  '#cc88ff', s);
+    pxr(ctx, ox+5, oy+4,  6, 1,  '#cc88ff', s);
+    pxr(ctx, ox+4, oy+5,  8, 5,  '#aa44ff', s);
+    pxr(ctx, ox+5, oy+10, 6, 1,  '#882dcc', s);
+    pxr(ctx, ox+7, oy+11, 2, 1,  '#661faa', s);
+    // inner facets
+    pxr(ctx, ox+6, oy+5,  2, 4,  '#dd99ff', s);
+    pxr(ctx, ox+7, oy+5,  2, 1,  '#ffffff', s);  // top flash
+    px(ctx, ox+4,  oy+7,  '#eeccff', s);
+  }
+  else if (rarity === 'legendary') {
+    // Crown
+    pxr(ctx, ox+2, oy+8,  12, 5,  '#d4a010', s);   // base band
+    pxr(ctx, ox+3, oy+9,  10, 3,  '#f0c830', s);   // band light
+    pxr(ctx, ox+2, oy+8,  12, 1,  '#ffe060', s);   // top of band
+    // crown points
+    pxr(ctx, ox+3, oy+4,  2, 5,   '#d4a010', s);
+    pxr(ctx, ox+7, oy+3,  2, 6,   '#d4a010', s);
+    pxr(ctx, ox+11,oy+4,  2, 5,   '#d4a010', s);
+    pxr(ctx, ox+3, oy+4,  2, 1,   '#ffe060', s);
+    pxr(ctx, ox+7, oy+3,  2, 1,   '#ffe060', s);
+    pxr(ctx, ox+11,oy+4,  2, 1,   '#ffe060', s);
+    // gem on center point
+    pxr(ctx, ox+7, oy+2,  2, 2,   '#ff4444', s);
+    px(ctx, ox+7, oy+2,   '#ff9999', s);  // gem shine
+    // side gems
+    px(ctx, ox+3, oy+3,   '#4488ff', s);
+    px(ctx, ox+12,oy+3,   '#4488ff', s);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  PLAYER SPRITE
+// ══════════════════════════════════════════════════════════════════
+function drawPlayer(ctx, ox, oy, s, dir, frame) {
+  const H  = T.hairColor;
+  const HD = T.hairDark;
+  const HL = T.hairLight;
+  const SH = T.shirtColor;
+  const SD = T.shirtDark;
+  const SL = T.shirtLight;
+
+  const SKIN  = '#f5c89a';
+  const SKIND = '#dfa87a';
+  const PANTS = '#604838';
+  const SHOE  = '#281800';
+  const BAG   = '#d89030';
+  const BAGD  = '#a86020';
+  const EYE   = '#201808';
+  const MOUTH = '#c06050';
+
+  // flip helper: mirrors x around center (for left-facing)
+  const flip = dir === 'left';
+  const fx = (x) => flip ? (ox + 15 - x) : (ox + x);
+
+  const p = (x, y, c, w=1, h=1) => {
+    if (!c) return;
+    ctx.fillStyle = c;
+    const rx = flip ? ((ox + 16 - x - w) * s) : ((ox + x) * s);
+    ctx.fillRect(rx, (oy + y) * s, w * s, h * s);
+  };
+
+  if (dir === 'down' || dir === 'up') {
+    const isUp = dir === 'up';
+
+    // HAIR
+    p(3, 1, H,  8, 1);
+    p(2, 2, HD, 1, 3);
+    p(11,2, HD, 1, 3);
+    p(3, 2, H,  6, 1);
+    p(9, 2, HL, 1, 1);
+    p(3, 3, HL, 3, 1);
+    p(6, 3, H,  4, 1);
+
+    if (isUp) {
+      // Back of head - no face
+      p(3, 4, H,  8, 2);
+      p(2, 3, HD, 1, 3);
+      p(11,3, HD, 1, 3);
+      p(3, 5, SKIND, 8, 3);  // nape of neck (very narrow)
+    } else {
+      // Face
+      p(3, 4, SKIN, 8, 5);
+      p(2, 5, SKIN, 1, 3);
+      p(11,5, SKIN, 1, 3);
+
+      // Eyes
+      p(4, 5, EYE,  2, 2);
+      p(8, 5, EYE,  2, 2);
+      p(4, 5, '#fff', 1, 1);  // shine
+      p(8, 5, '#fff', 1, 1);
+
+      // Nose dot
+      p(7, 7, SKIND, 1, 1);
+
+      // Mouth
+      p(5, 8, MOUTH, 4, 1);
+    }
+
+    // Shirt collar / body
+    p(3, 9,  SH, 8, 1);   // collar
+    p(2, 10, SH, 10, 3);  // body
+    p(1, 11, SD, 1, 2);   // arm shadow left
+    p(12,11, SD, 1, 2);   // arm shadow right
+    p(2, 10, SL, 1, 1);   // shirt light
+    
+    if (!isUp) {
+      // Bag on the right
+      p(11,10, BAG,  3, 4);
+      p(11,14, BAGD, 3, 1);
+      p(14,10, BAGD, 1, 4);
+    }
+
+    // Legs - animated
+    const leg = (frame===0||frame===2) ? 'neutral' :
+                frame===1 ? 'lstep' : 'rstep';
+
+    if (leg === 'neutral') {
+      p(3, 13, PANTS, 3, 2);
+      p(8, 13, PANTS, 3, 2);
+      p(3, 15, SHOE,  3, 1);
+      p(8, 15, SHOE,  3, 1);
+    } else if (leg === 'lstep') {
+      // left leg forward (lower)
+      p(3, 13, PANTS, 3, 2);
+      p(3, 15, SHOE,  3, 1);
+      // right leg back (shorter)
+      p(8, 13, PANTS, 3, 1);
+      p(8, 14, SHOE,  3, 1);
+    } else {
+      // right leg forward (lower)
+      p(8, 13, PANTS, 3, 2);
+      p(8, 15, SHOE,  3, 1);
+      // left leg back (shorter)
+      p(3, 13, PANTS, 3, 1);
+      p(3, 14, SHOE,  3, 1);
+    }
+
+  } else {
+    // SIDE view (right; flip handles left)
+
+    // Hair
+    p(5, 1, H,  7, 1);
+    p(4, 2, H,  8, 2);
+    p(4, 2, HD, 1, 2);
+    p(10,2, HL, 2, 1);
+
+    // Face
+    p(4, 4, SKIN, 8, 5);
+    p(4, 4, HD, 1, 5);   // hair continues past ear area
+    p(11,4, SKIND, 1, 5); // far side shadow
+
+    // One eye (near side)
+    p(6, 5, EYE, 2, 2);
+    p(6, 5, '#fff', 1, 1);
+
+    // Mouth
+    p(7, 8, MOUTH, 3, 1);
+
+    // Ear
+    p(4, 6, SKIND, 1, 2);
+
+    // Body / shirt
+    p(4, 9,  SH, 8, 4);
+    p(3, 10, SD, 1, 3);   // back arm
+    p(12,10, SL, 1, 3);   // front arm
+    p(4, 9,  SL, 1, 1);   // shirt top
+
+    // Bag on back
+    p(2, 10, BAG,  3, 4);
+    p(2, 14, BAGD, 3, 1);
+
+    // Legs animated (side view: feet alternate)
+    const step = (frame===0||frame===2) ? 'neutral' :
+                 frame===1 ? 'fwd' : 'bwd';
+
+    if (step === 'neutral') {
+      p(4, 13, PANTS, 5, 2);
+      p(4, 15, SHOE,  5, 1);
+    } else if (step === 'fwd') {
+      p(5, 13, PANTS, 5, 2);  // front leg
+      p(5, 15, SHOE,  6, 1);  // extends slightly
+      p(4, 13, PANTS, 1, 2);  // back leg stub
+      p(4, 15, SHOE,  2, 1);
+    } else {
+      p(4, 13, PANTS, 5, 2);  // front leg
+      p(4, 15, SHOE,  5, 1);
+      p(6, 13, PANTS, 4, 1);  // back leg shifted
+      p(6, 14, SHOE,  4, 1);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  SPRITE SHEET LAYOUT
+// ══════════════════════════════════════════════════════════════════
+// Sheet rows:
+//  Row 0: player walk down  (4 frames) — cols 0-3
+//  Row 1: player walk up    (4 frames) — cols 0-3
+//  Row 2: player walk right (4 frames) — cols 0-3
+//  Row 3: tiles: floor, wall, chest, chest_open, hazard — cols 0-4
+//  Row 4: loot: common, uncommon, rare, epic, legendary — cols 0-4
+
+const SHEET_W = 5;   // cells wide
+const SHEET_H = 5;   // rows
+
+function buildMasterSheet(s) {
+  const canvas = document.createElement('canvas');
+  canvas.width  = SHEET_W * 16 * s;
+  canvas.height = SHEET_H * 16 * s;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  // Player walk down
+  for (let f = 0; f < 4; f++) {
+    drawPlayer(ctx, f * 16, 0, s, 'down', f);
+  }
+  // Player walk up
+  for (let f = 0; f < 4; f++) {
+    drawPlayer(ctx, f * 16, 16, s, 'up', f);
+  }
+  // Player walk right
+  for (let f = 0; f < 4; f++) {
+    drawPlayer(ctx, f * 16, 32, s, 'right', f);
+  }
+  // Tiles row
+  drawFloor     (ctx, 0,  48, s);
+  drawWall      (ctx, 16, 48, s);
+  drawChest     (ctx, 32, 48, s);
+  drawChestOpen (ctx, 48, 48, s);
+  drawHazard    (ctx, 64, 48, s);
+  // Loot row
+  const rarities = ['common','uncommon','rare','epic','legendary'];
+  rarities.forEach((r, i) => drawLoot(ctx, i * 16, 64, s, r));
+
+  return canvas;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  RENDER MAIN SHEET
+// ══════════════════════════════════════════════════════════════════
+function renderSheets() {
+  [['sheet1x',1],['sheet4x',4],['sheet8x',8]].forEach(([id, s]) => {
+    const el = document.getElementById(id);
+    el.width  = SHEET_W * 16 * s;
+    el.height = SHEET_H * 16 * s;
+    const src = buildMasterSheet(s);
+    el.getContext('2d').drawImage(src, 0, 0);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  WALK ANIMATION
+// ══════════════════════════════════════════════════════════════════
+let walkFrame = 0;
+let walkTimer = 0;
+const WALK_DIRS = ['down','up','right','left'];
+
+function renderWalkPreviews() {
+  WALK_DIRS.forEach(dir => {
+    const canvas = document.getElementById(`walk${dir.charAt(0).toUpperCase()+dir.slice(1)}`);
+    const s = T.previewScale;
+    canvas.width  = 16 * s;
+    canvas.height = 16 * s;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // draw one grass tile as bg
+    drawFloor(ctx, 0, 0, s);
+    drawPlayer(ctx, 0, 0, s, dir, walkFrame);
+  });
+}
+
+function animateWalk(now) {
+  if (now - walkTimer > T.animSpeed) {
+    walkFrame = (walkFrame + 1) % 4;
+    walkTimer = now;
+    renderWalkPreviews();
+  }
+  requestAnimationFrame(animateWalk);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  TILES SECTION
+// ══════════════════════════════════════════════════════════════════
+function buildTilesSection() {
+  const row = document.getElementById('tilesRow');
+  row.innerHTML = '';
+  const tiles = [
+    { name: 'FLOOR',      key: 'floor',      draw: drawFloor },
+    { name: 'WALL',       key: 'wall',       draw: drawWall },
+    { name: 'CHEST',      key: 'chest',      draw: (c,x,y,s)=>drawChest(c,x,y,s) },
+    { name: 'CHEST OPEN', key: 'chest_open', draw: (c,x,y,s)=>drawChestOpen(c,x,y,s) },
+    { name: 'HAZARD',     key: 'hazard',     draw: drawHazard },
+  ];
+
+  tiles.forEach(tile => {
+    const card = document.createElement('div');
+    card.className = 'tile-card';
+
+    const canvas = document.createElement('canvas');
+    const s = 6;
+    canvas.width  = 16 * s;
+    canvas.height = 16 * s;
+    canvas.style.background = '#222831';
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    tile.draw(ctx, 0, 0, s);
+
+    const lbl = document.createElement('div');
+    lbl.className = 'lbl';
+    lbl.textContent = tile.name;
+
+    card.appendChild(canvas);
+    card.appendChild(lbl);
+    row.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  LOOT SECTION
+// ══════════════════════════════════════════════════════════════════
+const RARITY_META = {
+  common:    { label: 'COMMON',    color: '#aaaaaa', score: '10 pts'  },
+  uncommon:  { label: 'UNCOMMON',  color: '#44cc44', score: '25 pts'  },
+  rare:      { label: 'RARE',      color: '#4488ff', score: '75 pts'  },
+  epic:      { label: 'EPIC',      color: '#aa44ff', score: '200 pts' },
+  legendary: { label: 'LEGENDARY', color: '#ffaa00', score: '500 pts' },
+};
+
+function buildLootSection() {
+  const row = document.getElementById('lootRow');
+  row.innerHTML = '';
+
+  Object.entries(RARITY_META).forEach(([key, meta]) => {
+    const card = document.createElement('div');
+    card.className = 'loot-card';
+
+    const canvas = document.createElement('canvas');
+    const s = 6;
+    canvas.width  = 16 * s;
+    canvas.height = 16 * s;
+    canvas.style.background = '#0e1217';
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    drawLoot(ctx, 0, 0, s, key);
+
+    const badge = document.createElement('div');
+    badge.className = 'rarity-badge';
+    badge.textContent = meta.label;
+    badge.style.color = meta.color;
+    badge.style.background = meta.color + '22';
+    badge.style.border = `1px solid ${meta.color}44`;
+
+    const score = document.createElement('div');
+    score.style.cssText = 'font-size:10px;color:var(--muted);font-family:monospace';
+    score.textContent = meta.score;
+
+    card.appendChild(canvas);
+    card.appendChild(badge);
+    card.appendChild(score);
+    row.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  GAME PREVIEW
+// ══════════════════════════════════════════════════════════════════
+const GP_COLS = 8;
+const GP_ROWS = 8;
+const GP_TILE = 16;
+
+let gpPlayerX = 1;
+let gpPlayerDir = 'right';
+let gpPlayerFrame = 0;
+let gpTimer = 0;
+
+// Simple random map for preview
+const gpMap = (() => {
+  const m = [];
+  for (let r = 0; r < GP_ROWS; r++) {
+    const row = [];
+    for (let c = 0; c < GP_COLS; c++) {
+      if (r===0||r===GP_ROWS-1||c===0||c===GP_COLS-1) row.push('wall');
+      else if ((r===2&&c===5)||(r===5&&c===2)) row.push('chest');
+      else if ((r===4&&c===6)) row.push('hazard');
+      else row.push('floor');
+    }
+    m.push(row);
+  }
+  return m;
+})();
+
+function renderGamePreview(now) {
+  const canvas = document.getElementById('gamePreview');
+  const s = 4;
+  canvas.width  = GP_COLS * GP_TILE * s;
+  canvas.height = GP_ROWS * GP_TILE * s;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  // Draw tiles
+  for (let r = 0; r < GP_ROWS; r++) {
+    for (let c = 0; c < GP_COLS; c++) {
+      const tile = gpMap[r][c];
+      const ox = c * GP_TILE;
+      const oy = r * GP_TILE;
+      if (tile === 'wall')   drawWall(ctx, ox, oy, s);
+      else if (tile === 'chest')  { drawFloor(ctx,ox,oy,s); drawChest(ctx,ox,oy,s); }
+      else if (tile === 'hazard') { drawFloor(ctx,ox,oy,s); drawHazard(ctx,ox,oy,s); }
+      else drawFloor(ctx, ox, oy, s);
+    }
+  }
+
+  // Draw player walking across row 3
+  const playerCol = gpPlayerX;
+  drawPlayer(ctx, playerCol * GP_TILE, 3 * GP_TILE, s, gpPlayerDir, gpPlayerFrame);
+
+  requestAnimationFrame((t) => {
+    if (t - gpTimer > T.animSpeed) {
+      gpTimer = t;
+      gpPlayerFrame = (gpPlayerFrame + 1) % 4;
+      // move player
+      if (gpPlayerDir === 'right') {
+        gpPlayerX++;
+        if (gpPlayerX >= GP_COLS - 2) gpPlayerDir = 'left';
+      } else {
+        gpPlayerX--;
+        if (gpPlayerX <= 1) gpPlayerDir = 'right';
+      }
+    }
+    renderGamePreview(t);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  INFO ICONS
+// ══════════════════════════════════════════════════════════════════
+function buildInfoIcons() {
+  const s = 2;
+  [
+    ['iconFloor',  (c,x,y,s)=>drawFloor(c,x,y,s)],
+    ['iconWall',   (c,x,y,s)=>drawWall(c,x,y,s)],
+    ['iconChest',  (c,x,y,s)=>drawChest(c,x,y,s)],
+    ['iconHazard', (c,x,y,s)=>drawHazard(c,x,y,s)],
+  ].forEach(([id, fn]) => {
+    const el = document.getElementById(id);
+    el.width = 32; el.height = 32;
+    const ctx = el.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    fn(ctx, 0, 0, 2);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  DOWNLOADS
+// ══════════════════════════════════════════════════════════════════
+function downloadCanvas(canvas, filename) {
+  const a = document.createElement('a');
+  a.download = filename;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+function buildPlayerSheet() {
+  const c = document.createElement('canvas');
+  c.width = 4 * 16;   // 4 frames
+  c.height = 3 * 16;  // 3 directions
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ['down','up','right'].forEach((dir, row) => {
+    for (let f = 0; f < 4; f++) {
+      drawPlayer(ctx, f * 16, row * 16, 1, dir, f);
+    }
+  });
+  return c;
+}
+
+function buildTileSheet() {
+  const c = document.createElement('canvas');
+  c.width = 5 * 16; c.height = 16;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  drawFloor(ctx, 0, 0, 1);
+  drawWall(ctx, 16, 0, 1);
+  drawChest(ctx, 32, 0, 1);
+  drawChestOpen(ctx, 48, 0, 1);
+  drawHazard(ctx, 64, 0, 1);
+  return c;
+}
+
+function buildLootSheet() {
+  const c = document.createElement('canvas');
+  c.width = 5 * 16; c.height = 16;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ['common','uncommon','rare','epic','legendary'].forEach((r,i) => drawLoot(ctx, i*16, 0, 1, r));
+  return c;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  TWEAKS
+// ══════════════════════════════════════════════════════════════════
+function rebuildAll() {
+  renderSheets();
+  buildTilesSection();
+  buildLootSection();
+  buildInfoIcons();
+  renderWalkPreviews();
+}
+
+document.getElementById('hairColors').addEventListener('click', e => {
+  const sw = e.target.closest('.color-swatch');
+  if (!sw) return;
+  document.querySelectorAll('#hairColors .color-swatch').forEach(x => x.classList.remove('active'));
+  sw.classList.add('active');
+  const pal = HAIR_PALS[sw.dataset.h];
+  T.hairColor = pal.mid; T.hairDark = pal.dark; T.hairLight = pal.light;
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits:{hairColor:pal.mid,hairDark:pal.dark,hairLight:pal.light}}, '*');
+  rebuildAll();
+});
+
+document.getElementById('shirtColors').addEventListener('click', e => {
+  const sw = e.target.closest('.color-swatch');
+  if (!sw) return;
+  document.querySelectorAll('#shirtColors .color-swatch').forEach(x => x.classList.remove('active'));
+  sw.classList.add('active');
+  const pal = SHIRT_PALS[sw.dataset.s];
+  T.shirtColor = pal.mid; T.shirtDark = pal.dark; T.shirtLight = pal.light;
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits:{shirtColor:pal.mid,shirtDark:pal.dark,shirtLight:pal.light}}, '*');
+  rebuildAll();
+});
+
+document.getElementById('speedSlider').addEventListener('input', e => {
+  T.animSpeed = +e.target.value;
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits:{animSpeed:T.animSpeed}}, '*');
+});
+
+document.getElementById('scaleSlider').addEventListener('input', e => {
+  T.previewScale = +e.target.value;
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits:{previewScale:T.previewScale}}, '*');
+  renderWalkPreviews();
+});
+
+document.getElementById('dlPlayer').addEventListener('click', () => downloadCanvas(buildPlayerSheet(), 'player_spritesheet.png'));
+document.getElementById('dlTiles').addEventListener('click',  () => downloadCanvas(buildTileSheet(),  'tiles.png'));
+document.getElementById('dlLoot').addEventListener('click',   () => downloadCanvas(buildLootSheet(),  'loot_items.png'));
+
+// Tweaks panel toggle
+window.addEventListener('message', e => {
+  if (e.data?.type === '__activate_edit_mode')   document.getElementById('tweaksPanel').style.display = 'block';
+  if (e.data?.type === '__deactivate_edit_mode') document.getElementById('tweaksPanel').style.display = 'none';
+});
+window.parent.postMessage({type: '__edit_mode_available'}, '*');
+
+// ══════════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════════
+renderSheets();
+buildTilesSection();
+buildLootSection();
+buildInfoIcons();
+renderWalkPreviews();
+requestAnimationFrame(animateWalk);
+requestAnimationFrame(renderGamePreview);
+</script>
+</body>
+</html>
